@@ -44,18 +44,16 @@ def get_best_by_steps(grid, steps):
             if c == "S":
                 sx, sy = x, y
 
-    # first dijkstra: from S to right below volcano edge
-    q = [(0, sx, sy, None)]
+    # first dijkstra: from S to right below volcano burn edge (only use left side)
+    q = [(0, sx, sy)]
     seen = set()
     total = 0
-    prev_map = {}
     while len(q) > 0:
-        c, x, y, prev = heapq.heappop(q)
+        c, x, y = heapq.heappop(q)
 
         if (x, y) in seen:
             continue
         seen.add((x, y))
-        prev_map[(x, y)] = prev
 
         if x == cx and y > cy and y - 1 - cy <= steps:
             total += c
@@ -68,18 +66,14 @@ def get_best_by_steps(grid, steps):
             if (
                 0 <= nx < len(grid[0])
                 and 0 <= ny < len(grid)
+                and nx <= (cx + 2)
                 and (nx, ny) not in seen
                 and r > steps
             ):
-                heapq.heappush(q, (c + int(grid[ny][nx]), nx, ny, (x, y)))
+                heapq.heappush(q, (c + int(grid[ny][nx]), nx, ny))
 
+    # second dijkstra: from right below volcano to S (only use right side)
     seen = set()
-    while prev_map[(x, y)] != None and len(seen) < 30:
-        seen.add((x, y))
-        x, y = prev_map[(x, y)]
-    seen.discard((bx, by))
-
-    # second dijkstra: from right below volcano to S
     q = [(0, bx, by)]
     while len(q) > 0:
         c, x, y = heapq.heappop(q)
@@ -98,6 +92,7 @@ def get_best_by_steps(grid, steps):
             if (
                 0 <= nx < len(grid[0])
                 and 0 <= ny < len(grid)
+                and nx >= (cx - 2)
                 and (nx, ny) not in seen
                 and r > steps
             ):
