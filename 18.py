@@ -26,11 +26,12 @@ def read_layers(plants):
             plant_to_layer[n] = layer
             layers[layer].append((n, t, connections))
 
-    return layers
+    v = {n: 1 for (n, _, _) in layers[0]}
+    return layers[1:], v
 
 
 def forward(layers, v):
-    for layer in layers[1:]:
+    for layer in layers:
         next_v = {}
         for n, t, conns in layer:
             energy = 0
@@ -41,25 +42,23 @@ def forward(layers, v):
             next_v[n] = energy
         v = next_v
 
-    return v
+    return list(v.values())[0]
 
 
 lines = read_input(1, split_lines=False)
-layers = read_layers(lines)
-v = {n: 1 for (n, _, _) in layers[0]}
-v = forward(layers, v)
-print(list(v.values())[0])
+layers, v = read_layers(lines)
+res = forward(layers, v)
+print(res)
 
 lines = read_input(2, split_lines=False)
 plants, inputs = lines.split("\n\n\n")
-layers = read_layers(plants)
+layers, _ = read_layers(plants)
 final_thickness = layers[-1][0][1]
 inputs = [nums(i) for i in inputs.split("\n")]
 total = 0
 for i in inputs:
     v = {index + 1: val for (index, val) in enumerate(i)}
-    v = forward(layers, v)
-    result = list(v.values())[0]
+    result = forward(layers, v)
     if result >= final_thickness:
         total += result
 
@@ -67,15 +66,14 @@ print(total)
 
 lines = read_input(3, split_lines=False)
 plants, inputs = lines.split("\n\n\n")
-layers = read_layers(plants)
+layers, _ = read_layers(plants)
 final_thickness = layers[-1][0][1]
 inputs = [nums(i) for i in inputs.split("\n")]
 total = 0
 best = 0
 for i in inputs:
     orig = {index + 1: val for (index, val) in enumerate(i)}
-    v = forward(layers, orig)
-    result = list(v.values())[0]
+    result = forward(layers, orig)
     if result < final_thickness:
         continue
 
@@ -92,8 +90,7 @@ print(total)
 # it turns out for my input that we only need 1 toggle and that yields the maximum
 for i in range(len(best_i)):
     best_i[i + 1] = 1 if best_i[i + 1] == 0 else 0
-    after = forward(layers, best_i)
-    result = list(after.values())[0]
+    result = forward(layers, best_i)
     if result > best:
         print(result)
     best_i[i + 1] = 1 if best_i[i + 1] == 0 else 0
