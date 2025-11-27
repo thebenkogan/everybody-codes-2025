@@ -69,21 +69,18 @@ plants, inputs = lines.split("\n\n\n")
 layers, _ = read_layers(plants)
 final_thickness = layers[-1][0][1]
 inputs = [nums(i) for i in inputs.split("\n")]
-total = 0
 best = 0
+results = []
 for i in inputs:
     orig = {index + 1: val for (index, val) in enumerate(i)}
     result = forward(layers, orig)
     if result < final_thickness:
         continue
 
-    total += 13080 - result
-
+    results.append(result)
     if result > best:
         best = result
         best_i = orig
-
-print(total)
 
 # we try to toggle the input of each position in the best performing input vector
 # if that change results in a greater best output, then this is now the best vector
@@ -92,5 +89,8 @@ for i in range(len(best_i)):
     best_i[i + 1] = 1 if best_i[i + 1] == 0 else 0
     result = forward(layers, best_i)
     if result > best:
-        print(result)
+        maximum = result
+        break
     best_i[i + 1] = 1 if best_i[i + 1] == 0 else 0
+
+print(sum(maximum - r for r in results))
